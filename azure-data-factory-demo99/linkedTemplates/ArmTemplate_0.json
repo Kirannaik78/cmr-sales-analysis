@@ -885,7 +885,7 @@
 							"headers": {},
 							"url": "https://prod-01.northcentralus.logic.azure.com:443/workflows/1160df042a584f1da2ab28a0885b68bb/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=W5COQ39ye6s7kwjXOD4wPqyv28U526kXzeXhfAe1RMo",
 							"body": {
-								"value": "{\n    \"pipelineName\": \"@(pipeline().Pipeline)\",\n    \"status\": \"succeeded\",\n    \"runId\": \"@(pipeline().RunId)\",\n    \"time\": \"@(utcNow())\"\n}",
+								"value": "{\n    \"pipelineName\": \"@{pipeline().Pipeline}\",\n    \"status\": \"succeeded\",\n    \"runId\": \"@{pipeline().RunId}\",\n    \"time\": \"@{utcNow()}\"\n}",
 								"type": "Expression"
 							}
 						}
