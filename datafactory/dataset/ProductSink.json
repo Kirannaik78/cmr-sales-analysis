@@ -1,0 +1,23 @@
+{
+	"name": "ProductSink",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "RawDataSourceLinkedService",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "prodcut_raw_data",
+				"fileSystem": "sales-raw-data"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}

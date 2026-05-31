@@ -1,0 +1,23 @@
+{
+	"name": "SalePipelineSink",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "RawDataSourceLinkedService",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "sales_pipeline_raw_data",
+				"fileSystem": "sales-raw-data"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
