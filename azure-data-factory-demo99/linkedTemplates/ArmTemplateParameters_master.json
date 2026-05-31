@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "azure-data-factory-demo99"
+		},
+		"AzureDatabricksDeltaLake1_accessToken": {
+			"value": ""
+		},
+		"Databricks_linked_service_accessToken": {
+			"value": ""
+		},
+		"RawDataSourceLinkedService_accountKey": {
+			"value": ""
+		},
+		"StagingService_connectionString": {
+			"value": ""
+		},
+		"azure_table_storage_sink_connectionString": {
+			"value": ""
+		},
+		"RawDataSourceLinkedService_properties_typeProperties_url": {
+			"value": "https://rawdatatest.dfs.core.windows.net/"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
