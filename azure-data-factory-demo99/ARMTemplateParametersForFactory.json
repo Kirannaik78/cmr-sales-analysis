@@ -5,6 +5,9 @@
 		"factoryName": {
 			"value": "azure-data-factory-demo99"
 		},
+		"AzureDatabricks1_accessToken": {
+			"value": ""
+		},
 		"AzureDatabricksDeltaLake1_accessToken": {
 			"value": ""
 		},
@@ -19,6 +22,9 @@
 		},
 		"azure_table_storage_sink_connectionString": {
 			"value": ""
+		},
+		"AzureDatabricks1_properties_typeProperties_existingClusterId": {
+			"value": "0217-172851-lo4i1ns2"
 		},
 		"RawDataSourceLinkedService_properties_typeProperties_url": {
 			"value": "https://rawdatatest.dfs.core.windows.net/"

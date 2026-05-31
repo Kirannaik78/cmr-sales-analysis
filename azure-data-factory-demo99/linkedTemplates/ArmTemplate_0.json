@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "azure-data-factory-demo99"
 		},
+		"AzureDatabricks1_accessToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessToken' of 'AzureDatabricks1'"
+		},
 		"AzureDatabricksDeltaLake1_accessToken": {
 			"type": "secureString",
 			"metadata": "Secure string for 'accessToken' of 'AzureDatabricksDeltaLake1'"
@@ -27,6 +31,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'azure_table_storage_sink'"
 		},
+		"AzureDatabricks1_properties_typeProperties_existingClusterId": {
+			"type": "string",
+			"defaultValue": "0217-172851-lo4i1ns2"
+		},
 		"RawDataSourceLinkedService_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://rawdatatest.dfs.core.windows.net/"
@@ -36,6 +44,24 @@
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDatabricks1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricks",
+				"typeProperties": {
+					"domain": "https://adb-1506361690816079.19.azuredatabricks.net",
+					"accessToken": {
+						"type": "SecureString",
+						"value": "[parameters('AzureDatabricks1_accessToken')]"
+					},
+					"existingClusterId": "[parameters('AzureDatabricks1_properties_typeProperties_existingClusterId')]"
+				}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/AzureDatabricksDeltaLake1')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
@@ -840,7 +866,7 @@
 						"type": "WebActivity",
 						"dependsOn": [
 							{
-								"activity": "sales team",
+								"activity": "transformation",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -892,6 +918,33 @@
 								"type": "Expression"
 							}
 						}
+					},
+					{
+						"name": "transformation",
+						"type": "DatabricksNotebook",
+						"dependsOn": [
+							{
+								"activity": "sales team",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Users/kiranrnaik78@gmail.com/cmr-sales-analysis/databricks/New Notebook 2026-05-31 11_21_02"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureDatabricks1",
+							"type": "LinkedServiceReference"
+						}
 					}
 				],
 				"policy": {
@@ -909,7 +962,8 @@
 				"[concat(variables('factoryId'), '/datasets/SalesPipelineSource')]",
 				"[concat(variables('factoryId'), '/datasets/SalePipelineSink')]",
 				"[concat(variables('factoryId'), '/datasets/SalesTeamSource')]",
-				"[concat(variables('factoryId'), '/datasets/SaleTeamSink')]"
+				"[concat(variables('factoryId'), '/datasets/SaleTeamSink')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureDatabricks1')]"
 			]
 		},
 		{

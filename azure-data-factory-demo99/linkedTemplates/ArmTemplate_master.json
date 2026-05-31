@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "azure-data-factory-demo99"
 		},
+		"AzureDatabricks1_accessToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessToken' of 'AzureDatabricks1'"
+		},
 		"AzureDatabricksDeltaLake1_accessToken": {
 			"type": "secureString",
 			"metadata": "Secure string for 'accessToken' of 'AzureDatabricksDeltaLake1'"
@@ -26,6 +30,10 @@
 		"azure_table_storage_sink_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'azure_table_storage_sink'"
+		},
+		"AzureDatabricks1_properties_typeProperties_existingClusterId": {
+			"type": "string",
+			"defaultValue": "0217-172851-lo4i1ns2"
 		},
 		"RawDataSourceLinkedService_properties_typeProperties_url": {
 			"type": "string",
@@ -58,6 +66,9 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
+					"AzureDatabricks1_accessToken": {
+						"value": "[parameters('AzureDatabricks1_accessToken')]"
+					},
 					"AzureDatabricksDeltaLake1_accessToken": {
 						"value": "[parameters('AzureDatabricksDeltaLake1_accessToken')]"
 					},
@@ -72,6 +83,9 @@
 					},
 					"azure_table_storage_sink_connectionString": {
 						"value": "[parameters('azure_table_storage_sink_connectionString')]"
+					},
+					"AzureDatabricks1_properties_typeProperties_existingClusterId": {
+						"value": "[parameters('AzureDatabricks1_properties_typeProperties_existingClusterId')]"
 					},
 					"RawDataSourceLinkedService_properties_typeProperties_url": {
 						"value": "[parameters('RawDataSourceLinkedService_properties_typeProperties_url')]"
