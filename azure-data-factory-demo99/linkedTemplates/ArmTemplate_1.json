@@ -36,6 +36,255 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/SaleTransformation')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "AccountSouce",
+								"type": "DatasetReference"
+							},
+							"name": "Account"
+						},
+						{
+							"dataset": {
+								"referenceName": "ProductsSouce",
+								"type": "DatasetReference"
+							},
+							"name": "CRMProduct"
+						},
+						{
+							"dataset": {
+								"referenceName": "SalesPipelineSource",
+								"type": "DatasetReference"
+							},
+							"name": "SalesPipeline"
+						},
+						{
+							"dataset": {
+								"referenceName": "SalesTeamSource",
+								"type": "DatasetReference"
+							},
+							"name": "SalesTeam"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "SinkSalesTeamRevenue",
+								"type": "DatasetReference"
+							},
+							"name": "SinkToDataLake"
+						},
+						{
+							"dataset": {
+								"referenceName": "AccountTotalRevenueSink",
+								"type": "DatasetReference"
+							},
+							"name": "AccountTotalRevenueSink"
+						},
+						{
+							"dataset": {
+								"referenceName": "AccountYearOnYearSink",
+								"type": "DatasetReference"
+							},
+							"name": "AccountYearonYearRevenue"
+						},
+						{
+							"dataset": {
+								"referenceName": "ProductYoYSink",
+								"type": "DatasetReference"
+							},
+							"name": "ProductYOYSink"
+						},
+						{
+							"dataset": {
+								"referenceName": "ProductTotalRevenueSink",
+								"type": "DatasetReference"
+							},
+							"name": "ProductTotalRevenueSink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "AccountAndSalesPipelineJoin"
+						},
+						{
+							"name": "SalesAndProductJoin"
+						},
+						{
+							"name": "AccountTotalRevenueandSales"
+						},
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "FilterRows"
+						},
+						{
+							"name": "ProductTotalRevenueandSales"
+						},
+						{
+							"name": "AccountYearOnYearRevenuse"
+						},
+						{
+							"name": "ProductYearOnYearSales"
+						},
+						{
+							"name": "SalesAgentTotalRevenueAndSales"
+						},
+						{
+							"name": "JoinSalesTeam"
+						},
+						{
+							"name": "Select"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          account as string,",
+						"          sector as string,",
+						"          year_established as string,",
+						"          revenue as long,",
+						"          employees as string,",
+						"          office_location as string,",
+						"          subsidiary_of as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     ignoreNoFilesFound: false) ~> Account",
+						"source(output(",
+						"          product as string,",
+						"          series as string,",
+						"          sales_price as long",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     ignoreNoFilesFound: false) ~> CRMProduct",
+						"source(output(",
+						"          opportunity_id as string,",
+						"          sales_agent as string,",
+						"          product as string,",
+						"          account as string,",
+						"          deal_stage as string,",
+						"          engage_date as date,",
+						"          close_date as date,",
+						"          close_value as float",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     ignoreNoFilesFound: false) ~> SalesPipeline",
+						"source(output(",
+						"          sales_agent as string,",
+						"          manager as string,",
+						"          regional_office as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     ignoreNoFilesFound: false) ~> SalesTeam",
+						"Account, SalesPipeline join(Account@account == SalesPipeline@account,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> AccountAndSalesPipelineJoin",
+						"AccountAndSalesPipelineJoin, CRMProduct join(SalesPipeline@product == CRMProduct@product,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> SalesAndProductJoin",
+						"FilterRows aggregate(groupBy(Account@account),",
+						"     total_revenue = sum(revenue),",
+						"          total_price = sum(sales_price)) ~> AccountTotalRevenueandSales",
+						"SalesAndProductJoin derive(close_year = year(close_date)) ~> derivedColumn1",
+						"derivedColumn1 filter(!isNull(close_date)) ~> FilterRows",
+						"FilterRows aggregate(groupBy(CRMProduct@product),",
+						"     total_revenue = sum(revenue),",
+						"          total_price = sum(sales_price)) ~> ProductTotalRevenueandSales",
+						"FilterRows aggregate(groupBy(Account@account,",
+						"          close_year),",
+						"     total_revenue = sum(revenue),",
+						"          total_price = sum(sales_price)) ~> AccountYearOnYearRevenuse",
+						"FilterRows aggregate(groupBy(SalesPipeline@product,",
+						"          close_year),",
+						"     total_revenue = sum(revenue),",
+						"          total_sales = sum(sales_price)) ~> ProductYearOnYearSales",
+						"FilterRows aggregate(groupBy(sales_agent),",
+						"     total_revenue = sum(revenue),",
+						"          total_sale_price = sum(sales_price)) ~> SalesAgentTotalRevenueAndSales",
+						"SalesTeam, SalesAgentTotalRevenueAndSales join(SalesTeam@sales_agent == SalesAgentTotalRevenueAndSales@sales_agent,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> JoinSalesTeam",
+						"JoinSalesTeam select(mapColumn(",
+						"          sales_agent = SalesTeam@sales_agent,",
+						"          manager,",
+						"          regional_office,",
+						"          sales_agent = SalesAgentTotalRevenueAndSales@sales_agent,",
+						"          total_revenue,",
+						"          total_sale_price",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> Select",
+						"Select sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'parquet',",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 2,",
+						"          sales_agent",
+						"     )) ~> SinkToDataLake",
+						"AccountTotalRevenueandSales sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'parquet',",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> AccountTotalRevenueSink",
+						"AccountYearOnYearRevenuse sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'parquet',",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> AccountYearonYearRevenue",
+						"ProductYearOnYearSales sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'parquet',",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> ProductYOYSink",
+						"ProductTotalRevenueandSales sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'parquet',",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> ProductTotalRevenueSink"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ProductTotalRevenueSink')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/onPremtoCloud')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -432,7 +681,7 @@
 						"type": "DatabricksNotebook",
 						"dependsOn": [
 							{
-								"activity": "sales team",
+								"activity": "DataFlow Transformation",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -453,6 +702,50 @@
 							"referenceName": "AzureDatabricks1",
 							"type": "LinkedServiceReference"
 						}
+					},
+					{
+						"name": "DataFlow Transformation",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "sales team",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "SaleTransformation",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"Account": {},
+									"CRMProduct": {},
+									"SalesPipeline": {},
+									"SalesTeam": {},
+									"SinkToDataLake": {},
+									"AccountTotalRevenueSink": {},
+									"AccountYearonYearRevenue": {},
+									"ProductYOYSink": {},
+									"ProductTotalRevenueSink": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"policy": {
@@ -460,255 +753,8 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "AccountSouce",
-								"type": "DatasetReference"
-							},
-							"name": "Account"
-						},
-						{
-							"dataset": {
-								"referenceName": "ProductsSouce",
-								"type": "DatasetReference"
-							},
-							"name": "CRMProduct"
-						},
-						{
-							"dataset": {
-								"referenceName": "SalesPipelineSource",
-								"type": "DatasetReference"
-							},
-							"name": "SalesPipeline"
-						},
-						{
-							"dataset": {
-								"referenceName": "SalesTeamSource",
-								"type": "DatasetReference"
-							},
-							"name": "SalesTeam"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "SinkSalesTeamRevenue",
-								"type": "DatasetReference"
-							},
-							"name": "SinkToDataLake"
-						},
-						{
-							"dataset": {
-								"referenceName": "AccountTotalRevenueSink",
-								"type": "DatasetReference"
-							},
-							"name": "AccountTotalRevenueSink"
-						},
-						{
-							"dataset": {
-								"referenceName": "AccountYearOnYearSink",
-								"type": "DatasetReference"
-							},
-							"name": "AccountYearonYearRevenue"
-						},
-						{
-							"dataset": {
-								"referenceName": "ProductYoYSink",
-								"type": "DatasetReference"
-							},
-							"name": "ProductYOYSink"
-						},
-						{
-							"dataset": {
-								"referenceName": "ProductTotalRevenueSink",
-								"type": "DatasetReference"
-							},
-							"name": "ProductTotalRevenueSink"
-						}
-					],
-					"transformations": [
-						{
-							"name": "AccountAndSalesPipelineJoin"
-						},
-						{
-							"name": "SalesAndProductJoin"
-						},
-						{
-							"name": "AccountTotalRevenueandSales"
-						},
-						{
-							"name": "derivedColumn1"
-						},
-						{
-							"name": "FilterRows"
-						},
-						{
-							"name": "ProductTotalRevenueandSales"
-						},
-						{
-							"name": "AccountYearOnYearRevenuse"
-						},
-						{
-							"name": "ProductYearOnYearSales"
-						},
-						{
-							"name": "SalesAgentTotalRevenueAndSales"
-						},
-						{
-							"name": "JoinSalesTeam"
-						},
-						{
-							"name": "Select"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          account as string,",
-						"          sector as string,",
-						"          year_established as string,",
-						"          revenue as long,",
-						"          employees as string,",
-						"          office_location as string,",
-						"          subsidiary_of as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     inferDriftedColumnTypes: true,",
-						"     ignoreNoFilesFound: false) ~> Account",
-						"source(output(",
-						"          product as string,",
-						"          series as string,",
-						"          sales_price as long",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     inferDriftedColumnTypes: true,",
-						"     ignoreNoFilesFound: false) ~> CRMProduct",
-						"source(output(",
-						"          opportunity_id as string,",
-						"          sales_agent as string,",
-						"          product as string,",
-						"          account as string,",
-						"          deal_stage as string,",
-						"          engage_date as date,",
-						"          close_date as date,",
-						"          close_value as float",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     inferDriftedColumnTypes: true,",
-						"     ignoreNoFilesFound: false) ~> SalesPipeline",
-						"source(output(",
-						"          sales_agent as string,",
-						"          manager as string,",
-						"          regional_office as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     inferDriftedColumnTypes: true,",
-						"     ignoreNoFilesFound: false) ~> SalesTeam",
-						"Account, SalesPipeline join(Account@account == SalesPipeline@account,",
-						"     joinType:'inner',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> AccountAndSalesPipelineJoin",
-						"AccountAndSalesPipelineJoin, CRMProduct join(SalesPipeline@product == CRMProduct@product,",
-						"     joinType:'inner',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> SalesAndProductJoin",
-						"FilterRows aggregate(groupBy(Account@account),",
-						"     total_revenue = sum(revenue),",
-						"          total_price = sum(sales_price)) ~> AccountTotalRevenueandSales",
-						"SalesAndProductJoin derive(close_year = year(close_date)) ~> derivedColumn1",
-						"derivedColumn1 filter(!isNull(close_date)) ~> FilterRows",
-						"FilterRows aggregate(groupBy(CRMProduct@product),",
-						"     total_revenue = sum(revenue),",
-						"          total_price = sum(sales_price)) ~> ProductTotalRevenueandSales",
-						"FilterRows aggregate(groupBy(Account@account,",
-						"          close_year),",
-						"     total_revenue = sum(revenue),",
-						"          total_price = sum(sales_price)) ~> AccountYearOnYearRevenuse",
-						"FilterRows aggregate(groupBy(SalesPipeline@product,",
-						"          close_year),",
-						"     total_revenue = sum(revenue),",
-						"          total_sales = sum(sales_price)) ~> ProductYearOnYearSales",
-						"FilterRows aggregate(groupBy(sales_agent),",
-						"     total_revenue = sum(revenue),",
-						"          total_sale_price = sum(sales_price)) ~> SalesAgentTotalRevenueAndSales",
-						"SalesTeam, SalesAgentTotalRevenueAndSales join(SalesTeam@sales_agent == SalesAgentTotalRevenueAndSales@sales_agent,",
-						"     joinType:'inner',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> JoinSalesTeam",
-						"JoinSalesTeam select(mapColumn(",
-						"          sales_agent = SalesTeam@sales_agent,",
-						"          manager,",
-						"          regional_office,",
-						"          sales_agent = SalesAgentTotalRevenueAndSales@sales_agent,",
-						"          total_revenue,",
-						"          total_sale_price",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> Select",
-						"Select sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'parquet',",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 2,",
-						"          sales_agent",
-						"     )) ~> SinkToDataLake",
-						"AccountTotalRevenueandSales sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'parquet',",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> AccountTotalRevenueSink",
-						"AccountYearOnYearRevenuse sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'parquet',",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> AccountYearonYearRevenue",
-						"ProductYearOnYearSales sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'parquet',",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> ProductYOYSink",
-						"ProductTotalRevenueandSales sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'parquet',",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> ProductTotalRevenueSink"
-					]
-				}
-			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ProductTotalRevenueSink')]"
+				"[concat(variables('factoryId'), '/dataflows/SaleTransformation')]"
 			]
 		},
 		{
@@ -733,6 +779,7 @@
 						"frequency": "Hour",
 						"interval": 15,
 						"startTime": "2026-05-31T06:00:00",
+						"endTime": "2026-06-07T08:37:53",
 						"timeZone": "India Standard Time"
 					}
 				}

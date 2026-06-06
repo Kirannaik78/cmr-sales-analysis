@@ -441,7 +441,7 @@
 						"type": "DatabricksNotebook",
 						"dependsOn": [
 							{
-								"activity": "sales team",
+								"activity": "DataFlow Transformation",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -462,6 +462,50 @@
 							"referenceName": "AzureDatabricks1",
 							"type": "LinkedServiceReference"
 						}
+					},
+					{
+						"name": "DataFlow Transformation",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "sales team",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "SaleTransformation",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"Account": {},
+									"CRMProduct": {},
+									"SalesPipeline": {},
+									"SalesTeam": {},
+									"SinkToDataLake": {},
+									"AccountTotalRevenueSink": {},
+									"AccountYearonYearRevenue": {},
+									"ProductYOYSink": {},
+									"ProductTotalRevenueSink": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"policy": {
@@ -480,7 +524,8 @@
 				"[concat(variables('factoryId'), '/datasets/SalePipelineSink')]",
 				"[concat(variables('factoryId'), '/datasets/SalesTeamSource')]",
 				"[concat(variables('factoryId'), '/datasets/SaleTeamSink')]",
-				"[concat(variables('factoryId'), '/linkedServices/AzureDatabricks1')]"
+				"[concat(variables('factoryId'), '/linkedServices/AzureDatabricks1')]",
+				"[concat(variables('factoryId'), '/dataflows/SaleTransformation')]"
 			]
 		},
 		{
@@ -988,6 +1033,7 @@
 						"frequency": "Hour",
 						"interval": 15,
 						"startTime": "2026-05-31T06:00:00",
+						"endTime": "2026-06-07T08:37:53",
 						"timeZone": "India Standard Time"
 					}
 				}
@@ -997,7 +1043,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"name": "[concat(parameters('factoryName'), '/SaleTransformation')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
