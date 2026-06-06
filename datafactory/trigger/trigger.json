@@ -10,6 +10,7 @@
 				"frequency": "Hour",
 				"interval": 15,
 				"startTime": "2026-05-31T06:00:00",
+				"endTime": "2026-06-07T08:37:53",
 				"timeZone": "India Standard Time"
 			}
 		}
