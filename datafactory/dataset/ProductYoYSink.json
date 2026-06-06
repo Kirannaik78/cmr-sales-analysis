@@ -1,0 +1,20 @@
+{
+	"name": "ProductYoYSink",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "RawDataSourceLinkedService",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "product-YoY-revenue",
+				"fileSystem": "sales-agg"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
